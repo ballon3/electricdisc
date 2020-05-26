@@ -6,18 +6,62 @@ import json
 import os
 from toolz import memoize
 import httpx 
+import requests
+from bs4 import BeautifulSoup as bso
+
+class BMW:
+
+    BASE_URL = 'https://www.realoem.com/bmw/'
+    LANGUAGE = 'enUS'
+    URL = f"{BASE_URL}{LANGUAGE}"
+
+    'https://www.realoem.com/bmw/enUS/partgrp?id=0573-USA-12-1991-K569-BMW-K_75_RT_0565,0573_&mg=46'
+    'https://www.realoem.com/bmw/enUS/showparts?id=0573-USA-12-1991-K569-BMW-K_75_RT_0565,0573_&diagId=34_1906'
+    'https://www.realoem.com/bmw/enUS/showparts?id=0573-USA-12-1991-K569-BMW-K_75_RT_0565,0573_&diagId=34_1905'
+
+    def get_main_group(id):
+        params = {'id':id}
+        r = httpx.get(f'{URL}/partgrp', params=params)
+        print(r)
+        print(r.url)
+        return r.text 
+
+
+    def get_sub_group(url, filter):
+        pass
+
+    def get_part(diagId):
+        pass
+
+def extract_link(soupy):
+    soup = bso(soupy, "html.parser")
+            
+    for links in soup.find_all("a"):
+        href = links.
+        print(href,title)
+    
+
+def test_main_group(id):
+    BASE_URL = 'https://www.realoem.com/bmw/'
+    LANGUAGE = 'enUS'
+    URL = f"{BASE_URL}{LANGUAGE}"
+    params = {'id':id}
+    r = httpx.get(f'{URL}/partgrp', params=params)
+    soup = bso(r.text, "html.parser")
+            
+    for links in soup.find_all("div", {"class": "mg-thumb"}):
+        href = links.
+        print(href,title)
+
+K75 = '0573-USA-12-1991-K569-BMW-K_75_RT_0565%2C0573_'
+
+test_main_group(K75)
 
 app = FastAPI()
 
 # TODO: Change origin to real domain to reject Ajax requests from elsewhere
 app.add_middleware(CORSMiddleware, allow_origins=['*'])
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@memoize
-def data():
-    with open(os.path.join(os.path.dirname(__file__), 'esv.json')) as f:
-        return json.load(f)
-
 
 
 # SCRAPE UTILS 
@@ -94,25 +138,27 @@ class Diagram(BaseModel):
     price: Optional[int]
     notes: Optional[str]
     image: Optional[str]
-class partComponent(BaseModel):
+
+class Component(BaseModel):
     image: Optional[str]
     diagram: Optional[Diagram] 
     title: str
     heading: str 
+
 class Part(BaseModel):
     heading: str 
-    components: List[partComponent]
+    components: List[Component]
 
-class partGroup(BaseModel):
+class PartGrp(BaseModel):
     groups: List[Part]
 
-class Systems:
+class System:
     image: Optional[str]
     system: str
     url: Optional[str] 
 
-class mainGroup(BaseModel):
-    systems: List[Systems]
+class MainGrp(BaseModel):
+    systems: List[System]
 
 
 No.	Description	Supp.	Qty	 From 	 Up To 	Part Number	Price		Notes
